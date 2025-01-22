@@ -1,7 +1,5 @@
-# Lethal Company Cinematic Freecam
+# Lethal Company Extended Freecam
 
-This mod enables Lethal Company's built in cinematic freecam by using the built in keybind. To toggle freecam, press the 'C' key. When in freecam, you can use the sprint button to increase the camera speed while holding it.
+This mod is based on the mod by DaXcess which enables the built-in Freecam disabled by default in Lethal Company. This mod also adds a few features, such as zooming in and out (E and Q), moving up and down (Jump and Crouch), and speeding up or slowing down each of these with Shift and Alt.
 
-LCCinematicFreecam was made for capturing cinematic videos for the upcoming LCVR mod, but has been made public for everybody to use.
-
-I literally made this mod in like 30 minutes so it's not super fancy.
+The inputs are tied to the base game's bindings except for Alt. I may add custom binds later, but for now this is a very quick modification of the forked mod.
