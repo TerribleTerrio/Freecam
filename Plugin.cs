@@ -125,7 +125,7 @@ namespace LCCinematicFreecam
                 return;
 
             if (__instance.isFreeCamera)
-                DisableFreecam();
+                ChangeCameraState(State.Off);
         }
 
         private static IEnumerator SetupFreecam()
@@ -310,7 +310,7 @@ namespace LCCinematicFreecam
                 case 3:
                     currentState = State.FollowPlayer;
                     localPlayer.isFreeCamera = false;
-                    positionLerpMult = 6f;
+                    positionLerpMult = 5f;
                     rotationLerpMult = 6f;
                     extCameraTurnCompass.parent = playerCamera;
                     zoomInFlag = false;
