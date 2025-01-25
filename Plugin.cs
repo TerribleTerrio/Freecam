@@ -109,11 +109,13 @@ namespace LCCinematicFreecam
         }
 
         [HarmonyPatch(typeof(StartOfRound), "OnDestroy")]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         private static void OnGameLeft()
         {
-            startOfRound = null;
-            Object.Destroy(extCamera.gameObject);
+            if (extCamera.gameObject != null)
+            {
+                Object.Destroy(extCamera.gameObject);
+            }
             RemoveInputs();
         }
 
@@ -323,7 +325,8 @@ namespace LCCinematicFreecam
             Logger.Log("Enabling freecam!");
             localPlayer.isFreeCamera = true;
             StartOfRound.Instance.SwitchCamera(extCamera);
-            extCamera.cullingMask = 557520895;
+            extCamera.cullingMask = 591075327;
+            extCamera.farClipPlane = 400f;
             helmetObject.SetActive(false);
             localPlayer.thisPlayerModelArms.enabled = false;
             if (localPlayer.currentlyHeldObjectServer != null)
