@@ -109,13 +109,9 @@ namespace LCCinematicFreecam
         }
 
         [HarmonyPatch(typeof(StartOfRound), "OnDestroy")]
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         private static void OnGameLeft()
         {
-            if (extCamera.gameObject != null)
-            {
-                Object.Destroy(extCamera.gameObject);
-            }
             RemoveInputs();
         }
 
@@ -267,6 +263,11 @@ namespace LCCinematicFreecam
                 return;
             }
             Logger.Log("Keybind pressed: Bring camera to player!");
+            if (IngamePlayerSettings.Instance.playerInput.actions.FindAction("Sprint").ReadValue<float>() > 0.5f)
+            {
+                extCamera.transform.position = playerCamera.transform.position;
+                extCamera.transform.rotation = playerCamera.transform.rotation;
+            }
             extCameraTurnCompass.transform.position = playerCamera.transform.position;
             extCameraTurnCompass.transform.rotation = playerCamera.transform.rotation;
         }
@@ -274,6 +275,7 @@ namespace LCCinematicFreecam
         private static void ChangeCameraState(State stateToChangeTo)
         {
             zoomInFlag = null;
+            bool stopRoutines = true;
             switch ((int)currentState)
             {
                 case 0:
@@ -296,7 +298,8 @@ namespace LCCinematicFreecam
             {
                 case 0:
                     currentState = State.Off;
-                    DisableFreecam();
+                    DisableFreecam(stopRoutines: prevState != State.FollowPlayer);
+                    extCameraTurnCompass.parent = prevState != State.FollowPlayer ? StartOfRound.Instance.freeCinematicCameraTurnCompass.parent : playerCamera;
                     break;
 
                 case 1:
@@ -320,7 +323,7 @@ namespace LCCinematicFreecam
             }
         }
 
-        private static void EnableFreecam()
+        private static void EnableFreecam(bool stopRoutines = true)
         {
             Logger.Log("Enabling freecam!");
             localPlayer.isFreeCamera = true;
@@ -361,9 +364,10 @@ namespace LCCinematicFreecam
             moveCoroutine = startOfRound.StartCoroutine(MoveInput());
             hideScanNodesCoroutine = startOfRound.StartCoroutine(HideScanNodes());
             parentHeldItemCoroutine = startOfRound.StartCoroutine(ParentHeldItem());
+
         }
 
-        private static void DisableFreecam()
+        private static void DisableFreecam(bool stopRoutines = true)
         {
             Logger.Log($"Disabling freecam, (Dead: {localPlayer.isPlayerDead})!");
             localPlayer.isFreeCamera = false;
@@ -382,13 +386,16 @@ namespace LCCinematicFreecam
             localPlayer.cursorIcon.gameObject.SetActive(true);
             localPlayer.cursorTip.gameObject.SetActive(true);
             HUDManager.Instance.holdInteractionCanvasGroup.gameObject.SetActive(true);
-            if (lookCoroutine != null)
+            if (stopRoutines)
             {
-                startOfRound.StopCoroutine(lookCoroutine);
-            }
-            if (moveCoroutine != null)
-            {
-                startOfRound.StopCoroutine(moveCoroutine);
+                if (lookCoroutine != null)
+                {
+                    startOfRound.StopCoroutine(lookCoroutine);
+                }
+                if (moveCoroutine != null)
+                {
+                    startOfRound.StopCoroutine(moveCoroutine);
+                }
             }
             if (hideScanNodesCoroutine != null)
             {
@@ -453,11 +460,11 @@ namespace LCCinematicFreecam
                 extCameraTurnCompass.transform.position += vector * Time.deltaTime;
                 if (currentState == State.ControlCamera && IngamePlayerSettings.Instance.playerInput.actions.FindAction("Jump").IsPressed())
                 {
-                    extCameraTurnCompass.position += Vector3.up * (Time.deltaTime * currentVerticalSpeed);
+                    extCameraTurnCompass.position += extCameraTurnCompass.transform.up * (Time.deltaTime * currentVerticalSpeed);
                 }
                 if (currentState == State.ControlCamera && IngamePlayerSettings.Instance.playerInput.actions.FindAction("Crouch").IsPressed())
                 {
-                    extCameraTurnCompass.position += Vector3.down * (Time.deltaTime * currentVerticalSpeed);
+                    extCameraTurnCompass.position -= extCameraTurnCompass.transform.up * (Time.deltaTime * currentVerticalSpeed);
                 }
                 extCamera.transform.position = Vector3.Lerp(extCamera.transform.position, extCameraTurnCompass.transform.position, positionLerpMult * Time.deltaTime);
                 extCamera.transform.rotation = Quaternion.Slerp(extCamera.transform.rotation, extCameraTurnCompass.rotation, rotationLerpMult * Time.deltaTime);
